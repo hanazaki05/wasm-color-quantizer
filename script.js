@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
   );
   const processedImage = document.getElementById("processedImage");
   const processingIndicator = document.getElementById("processingIndicator");
+  const copyBtn = document.getElementById("copyBtn");
   let uploadedImage = null;
   const algorithm = document.getElementById("algorithm");
   const maxIterations = document.getElementById("maxIterations");
@@ -22,12 +23,33 @@ document.addEventListener("DOMContentLoaded", () => {
   imagePreview.addEventListener("dragover", handleDragOver);
   imagePreview.addEventListener("drop", handleDrop);
 
+  document.addEventListener("paste", handlePaste);
+
+  function handlePaste(e) {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const item of items) {
+      if (item.type.startsWith("image/")) {
+        e.preventDefault();
+        const file = item.getAsFile();
+        if (file) {
+          uploadedImage = file;
+          displayImage(file);
+          downloadBtn.disabled = true;
+          copyBtn.disabled = true;
+        }
+        return;
+      }
+    }
+  }
+
   function handleImageUpload(e) {
     const file = e.target.files[0];
     if (file) {
       uploadedImage = file;
       displayImage(file);
       downloadBtn.disabled = true;
+      copyBtn.disabled = true;
     }
   }
 
@@ -119,6 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
           document.querySelector("#processedImagePreview p").style.display =
             "none";
           downloadBtn.disabled = false;
+          copyBtn.disabled = false;
 
           const after = performance.now();
           console.log(`Time taken: ${after - before}ms`);
@@ -132,6 +155,26 @@ document.addEventListener("DOMContentLoaded", () => {
       img.src = URL.createObjectURL(uploadedImage);
     } else {
       alert("Please upload an image first");
+    }
+  });
+
+  copyBtn.addEventListener("click", async () => {
+    const processedImg = document.getElementById("processedImage");
+    if (!processedImg.src) return;
+    try {
+      const response = await fetch(processedImg.src);
+      const blob = await response.blob();
+      await navigator.clipboard.write([
+        new ClipboardItem({ [blob.type]: blob }),
+      ]);
+      const originalText = copyBtn.textContent;
+      copyBtn.textContent = "Copied!";
+      setTimeout(() => {
+        copyBtn.textContent = originalText;
+      }, 1500);
+    } catch (err) {
+      console.error("Failed to copy image:", err);
+      alert("Failed to copy image to clipboard.");
     }
   });
 

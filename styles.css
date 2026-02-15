@@ -70,6 +70,17 @@ button {
 #processBtn:hover {
     background-color: #4338ca;
 }
+#copyBtn {
+    background-color: #0891b2;
+    margin-bottom: 0.5rem;
+}
+#copyBtn:hover {
+    background-color: #0e7490;
+}
+#copyBtn:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+}
 #downloadBtn {
     background-color: #16a34a;
 }
